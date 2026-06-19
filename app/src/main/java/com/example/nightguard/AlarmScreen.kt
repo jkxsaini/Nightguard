@@ -1,4 +1,4 @@
-package com.example.nightguardtest.ui
+package com.example.nightguard
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
