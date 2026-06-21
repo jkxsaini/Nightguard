@@ -45,6 +45,9 @@ class MainActivity : ComponentActivity() {
                             Button(onClick = { currentScreen = "Alarm" }) {
                                 Text("Alarm")
                             }
+                            Button(onClick = { currentScreen = "SOS"}) {
+                                Text("SOS")
+                            }
                         }
                     }
                 ) { innerPadding ->
@@ -53,7 +56,8 @@ class MainActivity : ComponentActivity() {
                         when (currentScreen) {
                             "Main" -> MainScreen(modifier = Modifier) 
                             "FakeCall" -> FakeCallScreen()
-                            "Alarm" -> SOSscreen(
+                            "Alarm" -> AlarmScreen()
+                            "SOS" -> SOSscreen(
                                 onCancelClick = {
                                     currentScreen = "Main"
                                 }
