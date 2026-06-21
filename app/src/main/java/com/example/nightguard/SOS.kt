@@ -1,5 +1,9 @@
 package com.example.nightguard
 
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,10 +25,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.nightguard.ui.theme.NightguardTheme
 
 @Composable
-fun SosScreen() {
+fun NightguardApp() {
+    MaterialTheme {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = Color(0xFF350000)
+        ) {
+            SOSscreen()
+        }
+    }
+}
+
+@Composable
+fun SOSscreen(onCancelClick: () -> Unit = {}) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -48,7 +63,7 @@ fun SosScreen() {
 
         Spacer(modifier = Modifier.weight(1f))
 
-        CancelButton()
+        CancelButton(onCancelClick = onCancelClick)
 
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -82,11 +97,11 @@ fun WarningBox() {
 }
 
 @Composable
-fun CancelButton() {
+fun CancelButton(
+    onCancelClick: () -> Unit
+) {
     Button(
-        onClick = {
-            // später: SOS abbrechen
-        },
+        onClick = onCancelClick,
         modifier = Modifier
             .width(280.dp)
             .height(64.dp),

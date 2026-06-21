@@ -61,9 +61,13 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.padding(innerPadding)
                     ) {
                         when (currentScreen) {
-                            "Main" -> MainScreen(modifier = Modifier)
+                            "Main" -> MainScreen(modifier = Modifier) 
                             "FakeCall" -> FakeCallScreen()
-                            "Alarm" -> AlarmScreen()
+                            "Alarm" -> SOSscreen(
+                                onCancelClick = {
+                                    currentScreen = "Main"
+                                }
+                            )
                         }
                     }
                 }
