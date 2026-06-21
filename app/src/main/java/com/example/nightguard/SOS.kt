@@ -1,3 +1,5 @@
+package com.example.nightguard
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -28,16 +30,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        setContent {
-            NightguardApp()
-        }
-    }
-}
-
 @Composable
 fun NightguardApp() {
     MaterialTheme {
@@ -45,13 +37,15 @@ fun NightguardApp() {
             modifier = Modifier.fillMaxSize(),
             color = Color(0xFF350000)
         ) {
-            AlarmScreen()
+            SOSscreen()
         }
     }
 }
 
 @Composable
-fun AlarmScreen() {
+fun SOSscreen(
+    onCancelClick: () -> Unit = {}
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -75,7 +69,7 @@ fun AlarmScreen() {
 
         Spacer(modifier = Modifier.weight(1f))
 
-        CancelButton()
+        CancelButton(onCancelClick = onCancelClick)
 
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -109,11 +103,11 @@ fun WarningBox() {
 }
 
 @Composable
-fun CancelButton() {
+fun CancelButton(
+    onCancelClick: () -> Unit
+) {
     Button(
-        onClick = {
-            // später: SOS abbrechen
-        },
+        onClick = onCancelClick,
         modifier = Modifier
             .width(280.dp)
             .height(64.dp),
