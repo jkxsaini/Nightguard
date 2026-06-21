@@ -53,8 +53,7 @@ class MainActivity : ComponentActivity() {
                         when (currentScreen) {
                             "Main" -> MainScreen(modifier = Modifier) 
                             "FakeCall" -> FakeCallScreen()
-                            "Alarm" -> AlarmScreen()
-                            "SOS" -> SOSscreen(
+                            "Alarm" -> SOSscreen(
                                 onCancelClick = {
                                     currentScreen = "Main"
                                 }
