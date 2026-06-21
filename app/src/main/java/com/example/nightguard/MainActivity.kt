@@ -49,6 +49,9 @@ class MainActivity : ComponentActivity() {
                             Button(onClick = { navController.navigate("Alarm") }) {
                                 Text("Alarm")
                             }
+                            Button(onClick = { currentScreen = "SOS"}) {
+                                Text("SOS")
+                            }
                         }
                     }
                 ) { innerPadding ->
