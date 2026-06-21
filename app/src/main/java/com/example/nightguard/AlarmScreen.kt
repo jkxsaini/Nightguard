@@ -1,4 +1,4 @@
-package com.example.nightguardtest.ui
+package com.example.nightguard
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -9,105 +9,116 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun AlarmScreen() {
+fun AlarmScreen(
+    timeLeft: Int,               // Die dynamische Zeit aus dem ViewModel
+    onCancelAlarm: () -> Unit    // Aktion für den "Ich bin sicher"-Button
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF2C1A1A))
+            .background(Color(0xFF2C1A1A)) // Dunkelroter Hintergrund aus eurem Design
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
+        // 1. Obere Warnmeldung
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 40.dp)
-                .background(Color(0x80000000), shape = RoundedCornerShape(12.dp))
-                .padding(20.dp),
+                .background(Color(0x80444444), shape = RoundedCornerShape(12.dp))
+                .padding(all = 20.dp),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = "Ungewöhnliche Bewegung erkannt!!",
                 color = Color.White,
-                fontSize = 45.sp,
-                fontWeight = FontWeight.Bold
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
             )
         }
 
-        // 2. Countdown
+        // 2. Mittlerer Bereich mit dem Countdown
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.wrapContentHeight()
         ) {
             Text(
                 text = "COUNTDOWN",
-                color = Color.White,
-                fontSize = 28.sp,
-                letterSpacing = 2.sp,
-                fontWeight = FontWeight.Medium
+                color = Color.LightGray,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Medium,
+                letterSpacing = 2.sp
             )
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "15",
+                text = "$timeLeft",
                 color = Color.White,
-                fontSize = 150.sp,
+                fontSize = 80.sp,
                 fontWeight = FontWeight.Bold
             )
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = "Sekunden bis Alarm",
                 color = Color.LightGray,
-                fontSize = 25.sp,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.Medium
             )
         }
 
+        // 3. Untere Button-Sektion
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-
+            // Grüner "ICH BIN SICHER" Button
             Button(
-                onClick = { /* Funktion */ },
+                onClick = onCancelAlarm, // Löst die Abbruch-Funktion aus
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(80.dp)
+                    .height(56.dp)
             ) {
                 Text(
                     text = "ICH BIN SICHER",
-                    color = Color.White,
-                    fontSize = 35.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
                 )
             }
 
+            // Roter "SOS SENDEN" Button
             Button(
-                onClick = { /* Funktion */ },
+                onClick = { /* Hier kommt später die sofortige SOS-Funktion hin */ },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFB00020)),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(100.dp)
+                    .height(56.dp)
             ) {
                 Text(
                     text = "SOS SENDEN",
-                    color = Color.White,
-                    fontSize = 50.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
                 )
             }
         }
     }
 }
 
-@Preview(showBackground = true, device = "id:pixel_8")
+@Preview(showBackground = true)
 @Composable
-fun AlarmScreenPreview() {
-    AlarmScreen()
+fun FakeCallScreenPreview() {
+    FakeCallScreen(onAcceptCall = {}, onDeclineCall = {})
 }

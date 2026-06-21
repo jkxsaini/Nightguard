@@ -15,11 +15,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun FakeCallScreen() {
+fun FakeCallScreen(
+    onAcceptCall: () -> Unit,
+    onDeclineCall: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF1A1A1A)) // Sehr dunkler Hintergrund
+            .background(Color(0xFF1A1A1A))
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
@@ -52,16 +55,16 @@ fun FakeCallScreen() {
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-
             LargeCircularButton(
                 symbol = "✖️",
-                backgroundColor = Color(0xFFB00020)
+                backgroundColor = Color(0xFFB00020),
+                onClick = onDeclineCall
             )
-
 
             LargeCircularButton(
                 symbol = "📞",
-                backgroundColor = Color(0xFF4CAF50)
+                backgroundColor = Color(0xFF4CAF50),
+                onClick = onAcceptCall
             )
         }
     }
@@ -70,10 +73,11 @@ fun FakeCallScreen() {
 @Composable
 fun LargeCircularButton(
     symbol: String,
-    backgroundColor: Color
+    backgroundColor: Color,
+    onClick: () -> Unit
 ) {
     Surface(
-        onClick = { /* Funktion kommt später */ },
+        onClick = onClick,
         modifier = Modifier.size(85.dp),
         shape = CircleShape,
         color = backgroundColor,
@@ -88,8 +92,3 @@ fun LargeCircularButton(
     }
 }
 
-@Preview(showBackground = true, device = "id:pixel_8")
-@Composable
-fun FakeCallScreenPreview() {
-    FakeCallScreen()
-}
