@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 
 
 import com.example.nightguard.ui.theme.NightguardTheme
+import com.example.nightguardtest.ui.AlarmScreen
 
 
 class MainActivity : ComponentActivity() {
@@ -52,7 +53,8 @@ class MainActivity : ComponentActivity() {
                         when (currentScreen) {
                             "Main" -> MainScreen(modifier = Modifier) 
                             "FakeCall" -> FakeCallScreen()
-                            "Alarm" -> SOSscreen(
+                            "Alarm" -> AlarmScreen()
+                            "SOS" -> SOSscreen(
                                 onCancelClick = {
                                     currentScreen = "Main"
                                 }
