@@ -49,7 +49,7 @@ class MainActivity : ComponentActivity() {
                             Button(onClick = { navController.navigate("Alarm") }) {
                                 Text("Alarm")
                             }
-                            Button(onClick = { currentScreen = "SOS"}) {
+                            Button(onClick = { navController.navigate(route = "SOS") }){
                                 Text("SOS")
                             }
                         }
@@ -105,23 +105,6 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
-        }
-    }
-}
-
-// Antons Preview für seinen Screen
-@Preview(showSystemUi = true)
-@Composable
-fun MainScreenPreview() {
-    NightguardTheme(
-        darkTheme = true,
-        dynamicColor = false
-    ) {
-        Scaffold(
-            modifier = Modifier.fillMaxSize()
-        ) { innerPadding ->
-            // Falls MainScreen hier meckert, stelle sicher, dass er richtig importiert ist!
-            // MainScreen(modifier = Modifier.padding(innerPadding))
         }
     }
 }

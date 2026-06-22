@@ -16,6 +16,10 @@ val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
+//MapCard
+val MapWhite = Color(0x80222222)
+val Mapbackground = Color(0x40333333)
+
 //Buttons
 val GlassWhite = Color(0xFFFFFFFF).copy(alpha = 0.08f)
 val GlassBorder = Color(0xFFFFFFFF).copy(alpha = 0.15f)
