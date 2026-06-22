@@ -20,7 +20,8 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
-
+import com.example.nightguard.navigation.navigateToFakeCall
+import com.example.nightguard.navigation.*
 
 @Composable
 fun MainScreen(

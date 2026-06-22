@@ -41,9 +41,12 @@ fun NightguardNavHost(
         modifier = modifier
     ) {
         composable("Main") {
-            MainScreen(modifier = Modifier)
+            MainScreen(
+                modifier = Modifier,
+                onFakeCallClick = {navigateToFakeCall(navController)
         }
-
+            )
+        }
         composable("FakeCall") {
             FakeCallScreen(
                 onAcceptCall = { navController.popBackStack() },

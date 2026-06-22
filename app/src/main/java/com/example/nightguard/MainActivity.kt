@@ -29,7 +29,6 @@ class MainActivity : ComponentActivity() {
                                 .padding(16.dp),
                             horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
-                            // Die Buttons nutzen jetzt deinen professionellen NavController!
                             Button(onClick = { navigateToMain(navController) }) {
                                 Text("Home")
                             }
