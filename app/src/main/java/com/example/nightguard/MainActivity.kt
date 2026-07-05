@@ -52,6 +52,9 @@ class MainActivity : ComponentActivity() {
                             Button(onClick = { navController.navigate(route = "SOS") }){
                                 Text("SOS")
                             }
+                            Button(onClick = { navController.navigate("UserProfile") }) {
+                                Text("Profil")
+                            }
                         }
                     }
                 ) { innerPadding ->
@@ -99,6 +102,13 @@ class MainActivity : ComponentActivity() {
                             SOSscreen(
                                 onCancelClick = {
                                     navController.navigate("Main") // Sicher zurück ins Hauptmenü
+                                }
+                            )
+                        }
+                        composable("UserProfile") {
+                            UserProfileScreen(
+                                onBackToHome = {
+                                    navController.navigate("Main")
                                 }
                             )
                         }
