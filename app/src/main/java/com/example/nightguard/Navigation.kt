@@ -10,11 +10,19 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
+
 import com.example.nightguard.AlarmScreen
 import com.example.nightguard.FakeCallScreen
 import com.example.nightguard.MainScreen
 import com.example.nightguard.SOSscreen
 import com.example.nightguard.ui.AlarmViewModel
+import com.example.nightguard.LocationViewModel
 fun navigateToMain(navController: NavController) {
     navController.navigate("Main")
 }
@@ -35,6 +43,23 @@ fun NightguardNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
+    val locationViewModel: LocationViewModel = viewModel()
+    val context = LocalContext.current
+
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val fineLocationGranted =
+            permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
+
+        val coarseLocationGranted =
+            permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+
+        if (fineLocationGranted || coarseLocationGranted) {
+            locationViewModel.onLocationPermissionDenied()
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = "Main",
@@ -43,7 +68,32 @@ fun NightguardNavHost(
         composable("Main") {
             MainScreen(
                 modifier = Modifier,
-                onFakeCallClick = {navigateToFakeCall(navController)
+                locationUiState = locationViewModel.locationUiState,
+                onShareLocationClick = {
+                    val fineLocationGranted = ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED
+
+                    val coarseLocationGranted = ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED
+
+                    if (fineLocationGranted || coarseLocationGranted) {
+                        locationViewModel.loadCurrentLocation()
+                    } else {
+                        locationPermissionLauncher.launch(
+                            arrayOf(
+                                Manifest.permission.ACCESS_FINE_LOCATION,
+                                Manifest.permission.ACCESS_COARSE_LOCATION
+                            )
+                        )
+                    }
+
+                },
+                onFakeCallClick = {
+                    navigateToFakeCall(navController)
         }
             )
         }
