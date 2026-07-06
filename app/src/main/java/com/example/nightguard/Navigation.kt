@@ -14,6 +14,7 @@ import com.example.nightguard.AlarmScreen
 import com.example.nightguard.FakeCallScreen
 import com.example.nightguard.MainScreen
 import com.example.nightguard.SOSscreen
+import com.example.nightguard.UserProfileScreen
 import com.example.nightguard.ui.AlarmViewModel
 fun navigateToMain(navController: NavController) {
     navController.navigate("Main")
@@ -91,5 +92,4 @@ fun NightguardNavHost(
             )
         }
     }
-
 }
