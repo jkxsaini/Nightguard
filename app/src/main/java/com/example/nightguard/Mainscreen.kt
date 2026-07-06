@@ -1,4 +1,9 @@
 package com.example.nightguard
+
+import com.example.nightguard.ui.theme.NightguardBackground
+import com.example.nightguard.ui.theme.metallicGlassButtonColors
+import com.example.nightguard.ui.theme.metallicGlassBorder
+import com.example.nightguard.LocationUIState.LocationUIState
 import com.example.nightguard.ui.theme.NightguardTheme
 
 import androidx.compose.foundation.background
@@ -12,20 +17,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.example.nightguard.ui.theme.NightguardBackground
-import com.example.nightguard.ui.theme.metallicGlassButtonColors
-import com.example.nightguard.ui.theme.metallicGlassBorder
+
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
-import com.example.nightguard.navigation.navigateToFakeCall
-import com.example.nightguard.navigation.*
+
 
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,
+    locationUiState: LocationUIState = LocationUIState(),
     onShareLocationClick: () -> Unit = {},
     onFakeCallClick: () -> Unit = {}
     ) {
@@ -43,7 +46,8 @@ fun MainScreen(
                 .align(Alignment.TopCenter)
                 .padding(top = 32.dp, start = 24.dp, end = 24.dp)
                 .fillMaxWidth()
-                .height(260.dp)
+                .height(260.dp),
+            locationUiState = locationUiState
         )
 
         Button(
