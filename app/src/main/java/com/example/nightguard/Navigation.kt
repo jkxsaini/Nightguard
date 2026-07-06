@@ -61,6 +61,8 @@ fun NightguardNavHost(
             permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
 
         if (fineLocationGranted || coarseLocationGranted) {
+            locationViewModel.loadCurrentLocation()
+        } else {
             locationViewModel.onLocationPermissionDenied()
         }
     }

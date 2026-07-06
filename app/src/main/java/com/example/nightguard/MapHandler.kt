@@ -52,7 +52,7 @@ fun MapHandler(
             contentAlignment = Alignment.Center
         ){
             Text(
-                text = "Map Placeholder",
+                text = mapText,
                 color = Color.White
             )
         }
