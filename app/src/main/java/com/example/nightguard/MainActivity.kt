@@ -41,6 +41,9 @@ class MainActivity : ComponentActivity() {
                             Button(onClick = { navigateToSOS(navController) }){
                                 Text("SOS")
                             }
+                            Button(onClick = { navController.navigate("UserProfile") }) {
+                                Text("Profil")
+                            }
                         }
                     }
                 ) { innerPadding ->
