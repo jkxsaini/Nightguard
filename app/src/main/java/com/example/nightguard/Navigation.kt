@@ -30,6 +30,10 @@ fun navigateToAlarm(navController: NavController) {
 fun navigateToSOS(navController: NavController) {
     navController.navigate("SOS")
 }
+
+fun navigateToUserProfileScreen(navController: NavController) {
+    navController.navigate("UserProfile")
+}
 @Composable
 fun NightguardNavHost(
     navController: NavHostController,
@@ -75,6 +79,14 @@ fun NightguardNavHost(
             SOSscreen(
                 onCancelClick = {
                     navigateToMain(navController)
+                }
+            )
+        }
+
+        composable("UserProfile") {
+            UserProfileScreen(
+                onBackToHome = {
+                    navController.navigate("Main")
                 }
             )
         }
