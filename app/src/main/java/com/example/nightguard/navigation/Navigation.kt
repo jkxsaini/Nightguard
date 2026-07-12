@@ -15,24 +15,23 @@ fun NightguardNavHost(navController: NavHostController) {
     NavHost(navController = navController, startDestination = "Main") {
         composable("Main") {
             MainScreen(
-                locationUiState = LocationUIState.LocationUIState(),
                 onShareLocationClick = { contact ->
                     selectedContact = contact
                     navController.navigate("Tracking")
                 },
                 onFakeCallClick = { navController.navigate("FakeCall") },
-                onNavigateToProfile = { navController.navigate("UserProfile") }
+                onNavigateToProfile = { navController.navigate("UserProfile") },
+                onEmergencyShake = { navController.navigate("AlarmScreen") } // Bei Schütteln -> Countdown starten!
             )
         }
 
         composable("Tracking") {
             TrackingScreen(
                 contactName = selectedContact,
-                onStopTracking = { navController.popBackStack() }, // Geht zurück zum MainScreen
+                onStopTracking = { navController.popBackStack() },
                 onFakeCallClick = { navController.navigate("FakeCall") },
                 onPoliceCallClick = {},
                 onSosClick = { navController.navigate("SOS") },
-                // NEU: Klick auf Icon öffnet den AlarmScreen (Countdown)
                 onShakeTriggered = { navController.navigate("AlarmScreen") }
             )
         }

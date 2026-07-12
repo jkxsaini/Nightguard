@@ -13,12 +13,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.nightguard.data.SecureStorage
 
 @Composable
 fun TrackingScreen(
@@ -29,44 +31,36 @@ fun TrackingScreen(
     onSosClick: () -> Unit,
     onShakeTriggered: () -> Unit = {}
 ) {
+    val context = LocalContext.current
+    val secureStorage = remember { SecureStorage(context) }
+    val correctPin = remember { secureStorage.getPin() }
+
     var showPinDialog by remember { mutableStateOf(false) }
     var pinInput by remember { mutableStateOf("") }
     var pinError by remember { mutableStateOf(false) }
-    val correctPin = "1234"
 
     val deepWine = Color(0xFF1B040D)
     val buttonGrey = Color(0xFF333333)
     val policeRed = Color(0xFFD32F2F)
     val sosRed = Color(0xFFEF5350)
 
+    // Dialog für die PIN-Sicherung
     if (showPinDialog) {
         AlertDialog(
-            onDismissRequest = {
-                showPinDialog = false
-                pinInput = ""
-                pinError = false
-            },
+            onDismissRequest = { showPinDialog = false; pinInput = ""; pinError = false },
             title = { Text("Tracking beenden") },
             text = {
                 Column {
-                    Text("Bitte PIN eingeben, um fortzufahren:")
+                    Text("Bitte PIN eingeben, um das Tracking sicher zu beenden:")
                     Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
                         value = pinInput,
-                        onValueChange = {
-                            pinInput = it
-                            pinError = false
-                        },
+                        onValueChange = { pinInput = it; pinError = false },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                         visualTransformation = PasswordVisualTransformation(),
                         isError = pinError,
                         singleLine = true,
-                        label = { Text("PIN") },
-                        supportingText = {
-                            if (pinError) {
-                                Text("Falsche PIN. Bitte erneut versuchen.", color = MaterialTheme.colorScheme.error)
-                            }
-                        }
+                        label = { Text("PIN") }
                     )
                 }
             },
@@ -80,15 +74,6 @@ fun TrackingScreen(
                         pinError = true
                     }
                 }) { Text("Bestätigen") }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    showPinDialog = false
-                    pinInput = ""
-                    pinError = false
-                }) {
-                    Text("Abbrechen")
-                }
             }
         )
     }
@@ -102,86 +87,44 @@ fun TrackingScreen(
     ) {
         Spacer(modifier = Modifier.height(48.dp))
 
-        // 3. NEU: Versteckter Shortcut auf dem Icon
+        // Dein geheimer Präsentations-Trigger
         Icon(
             imageVector = Icons.Filled.LocationOn,
-            contentDescription = "Active Tracking (Klick simuliert Crash)",
+            contentDescription = "Active Tracking",
             tint = Color(0xFF4CAF50),
             modifier = Modifier
                 .size(84.dp)
-                .clickable { onShakeTriggered() } // Löst den Shortcut aus
+                .clickable { onShakeTriggered() }
         )
+
         Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Standort wird geteilt",
-            color = Color.White,
-            fontSize = 26.sp,
-            fontWeight = FontWeight.ExtraBold
-        )
-        Text(
-            text = "mit $contactName",
-            color = Color.LightGray,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Medium
-        )
+
+        Text(text = "Standort wird geteilt", color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.ExtraBold)
+        Text(text = "mit $contactName", color = Color.LightGray, fontSize = 18.sp, fontWeight = FontWeight.Medium)
 
         Spacer(modifier = Modifier.weight(1f))
 
+        // Jetzt wieder mit PIN-Abfrage:
         Button(
             onClick = { showPinDialog = true },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
+            modifier = Modifier.fillMaxWidth().height(56.dp),
             shape = RoundedCornerShape(50),
             colors = ButtonDefaults.buttonColors(containerColor = buttonGrey)
         ) {
-            Text(
-                text = "Sicher angekommen (Beenden)",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+            Text("Sicher angekommen (Beenden)", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
         }
 
         Spacer(modifier = Modifier.weight(1f))
 
-        Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
-        ) {
-            OutlinedButton(
-                onClick = onFakeCallClick,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(50),
-                border = BorderStroke(1.dp, Color.Gray),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
-            ) {
-                Icon(Icons.Filled.Call, null)
-                Spacer(Modifier.width(12.dp))
-                Text("Fake Call auslösen", fontSize = 16.sp)
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)) {
+            OutlinedButton(onClick = onFakeCallClick, modifier = Modifier.fillMaxWidth().height(56.dp), shape = RoundedCornerShape(50), border = BorderStroke(1.dp, Color.Gray), colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)) {
+                Icon(Icons.Filled.Call, null); Spacer(Modifier.width(12.dp)); Text("Fake Call auslösen")
             }
-
-            Button(
-                onClick = onPoliceCallClick,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(50),
-                colors = ButtonDefaults.buttonColors(containerColor = policeRed)
-            ) {
-                Icon(Icons.Filled.LocalPolice, null)
-                Spacer(Modifier.width(12.dp))
-                Text("Polizei Notruf (110)", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Button(onClick = onPoliceCallClick, modifier = Modifier.fillMaxWidth().height(56.dp), shape = RoundedCornerShape(50), colors = ButtonDefaults.buttonColors(containerColor = policeRed)) {
+                Icon(Icons.Filled.LocalPolice, null); Spacer(Modifier.width(12.dp)); Text("Polizei Notruf (110)")
             }
-
-            Button(
-                onClick = onSosClick,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(50),
-                colors = ButtonDefaults.buttonColors(containerColor = sosRed)
-            ) {
-                Icon(Icons.Filled.Warning, null)
-                Spacer(Modifier.width(12.dp))
-                Text("SOS an $contactName", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Button(onClick = onSosClick, modifier = Modifier.fillMaxWidth().height(56.dp), shape = RoundedCornerShape(50), colors = ButtonDefaults.buttonColors(containerColor = sosRed)) {
+                Icon(Icons.Filled.Warning, null); Spacer(Modifier.width(12.dp)); Text("SOS an $contactName")
             }
         }
     }

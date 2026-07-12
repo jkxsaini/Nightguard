@@ -1,5 +1,9 @@
 package com.example.nightguard.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -11,34 +15,83 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import com.example.nightguard.sensors.ShakeDetector
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.rememberCameraPositionState
-
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 @Composable
 fun MainScreen(
     locationUiState: Any? = null,
     onShareLocationClick: (String) -> Unit,
     onFakeCallClick: () -> Unit,
-    onNavigateToProfile: () -> Unit
+    onNavigateToProfile: () -> Unit,
+    onEmergencyShake: () -> Unit // NEU: Für den Schüttel-Sensor
 ) {
+    val context = LocalContext.current
+
     // Farben
     val deepWine = Color(0xFF1B040D)
     val cardColor = Color(0xFF2C2C2C)
     val buttonColor = Color(0xFF111111)
 
-    // FIX 1: Variablen für das Dropdown-Menü
-    var expanded by remember { mutableStateOf(false) }
-    val contacts = listOf("Mama", "Papa", "Anton", "Mitbewohnerin")
+    // Holt die echten, gespeicherten Kontakte!
+    val secureStorage = remember { com.example.nightguard.data.SecureStorage(context) }
+    var contacts by remember { mutableStateOf(secureStorage.getContacts()) }
 
-    // Start-Position für die Karte (z.B. Köln)
-    val startLocation = LatLng(50.9375, 6.9603)
+// FIX: Hier muss die Variable definiert werden!
+    var expanded by remember { mutableStateOf(false) }
+
+    // GPS und Sensor State (Startposition in Köln)
+    var currentLocation by remember { mutableStateOf(LatLng(50.9375, 6.9603)) }
+    var hasLocationPermission by remember { mutableStateOf(false) }
+
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(startLocation, 15f)
+        position = CameraPosition.fromLatLngZoom(currentLocation, 15f)
+    }
+
+    // 1. Permission Launcher für GPS
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        hasLocationPermission = isGranted
+    }
+
+    // 2. Echtes GPS abfragen
+    LaunchedEffect(Unit) {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            hasLocationPermission = true
+            val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                if (location != null) {
+                    currentLocation = LatLng(location.latitude, location.longitude)
+                    cameraPositionState.position = CameraPosition.fromLatLngZoom(currentLocation, 15f)
+                }
+            }
+        } else {
+            permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+    }
+
+    // 3. Shake Detector starten
+    DisposableEffect(Unit) {
+        val shakeDetector = ShakeDetector(context) {
+            onEmergencyShake()
+        }
+        shakeDetector.start()
+        onDispose {
+            shakeDetector.stop()
+        }
     }
 
     Scaffold(
@@ -92,14 +145,13 @@ fun MainScreen(
             }
         }
     ) { paddingValues ->
-        // FIX 2: Die weiße Lücke oben schließen!
-        // Wir nehmen nur das Padding für unten, damit die Menüleiste nicht verdeckt wird.
+        // Die weiße Lücke oben schließen!
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(bottom = paddingValues.calculateBottomPadding())
         ) {
-            // OBERER TEIL: Die Google Map (geht jetzt bis ganz nach oben)
+            // OBERER TEIL: Die Google Map (mit GPS)
             GoogleMap(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -115,11 +167,11 @@ fun MainScreen(
                     .padding(horizontal = 24.dp, vertical = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // FIX 3: Schnellstart ist jetzt klickbar und startet das Tracking
+                // Schnellstart
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onShareLocationClick("Anton") }, // HIER IST DER KLICK
+                        .clickable { onShareLocationClick("Anton") },
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = cardColor)
                 ) {
@@ -129,7 +181,6 @@ fun MainScreen(
                             .fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Walking Icon
                         Icon(
                             imageVector = Icons.Filled.DirectionsWalk,
                             contentDescription = null,
@@ -137,8 +188,6 @@ fun MainScreen(
                             modifier = Modifier.size(28.dp)
                         )
                         Spacer(modifier = Modifier.width(16.dp))
-
-                        // Texte in der Karte
                         Column {
                             Text(
                                 text = "Schnellstart",
@@ -157,7 +206,7 @@ fun MainScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // FIX 1: ECHTES DROPDOWN-MENÜ
+                // ECHTES DROPDOWN-MENÜ
                 Box(modifier = Modifier.fillMaxWidth()) {
                     Button(
                         onClick = { expanded = true },
@@ -172,12 +221,11 @@ fun MainScreen(
                         Icon(Icons.Filled.ArrowDropDown, contentDescription = "Aufklappen", tint = Color.White)
                     }
 
-                    // Das Menü, das beim Klicken aufklappt
                     DropdownMenu(
                         expanded = expanded,
                         onDismissRequest = { expanded = false },
                         modifier = Modifier
-                            .background(cardColor) // Passt farblich zum Dark-Theme
+                            .background(cardColor)
                             .fillMaxWidth(0.85f)
                     ) {
                         contacts.forEach { contact ->
@@ -185,7 +233,7 @@ fun MainScreen(
                                 text = { Text(contact, color = Color.White, fontSize = 16.sp) },
                                 onClick = {
                                     expanded = false
-                                    onShareLocationClick(contact) // Startet Tracking mit gewählter Person
+                                    onShareLocationClick(contact)
                                 }
                             )
                         }
