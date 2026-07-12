@@ -1,4 +1,4 @@
-package com.example.nightguard
+package com.example.nightguard.data
 
 import androidx.room.Dao
 import androidx.room.Insert
@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface UserDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.Companion.REPLACE)
     suspend fun insertUser(user: User)
 
     @Query("SELECT * FROM users ORDER BY id DESC LIMIT 1")

@@ -1,17 +1,13 @@
-package com.example.nightguard
+package com.example.nightguard.data
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(
-    entities = [User::class],
-    version = 1
-)
+@Database(entities = [EmergencyContact::class], version = 1, exportSchema = false)
 abstract class NightguardDatabase : RoomDatabase() {
-
-    abstract fun userDao(): UserDao
+    abstract fun contactDao(): ContactDao
 
     companion object {
         @Volatile
@@ -24,7 +20,6 @@ abstract class NightguardDatabase : RoomDatabase() {
                     NightguardDatabase::class.java,
                     "nightguard_database"
                 ).build()
-
                 INSTANCE = instance
                 instance
             }

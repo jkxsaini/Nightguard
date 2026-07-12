@@ -1,4 +1,4 @@
-package com.example.nightguard.ui
+package com.example.nightguard.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

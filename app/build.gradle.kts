@@ -65,4 +65,7 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+    implementation("androidx.compose.material:material-icons-extended")
+    implementation("com.google.maps.android:maps-compose:4.3.0")
+    implementation("com.google.android.gms:play-services-maps:19.0.0")
 }

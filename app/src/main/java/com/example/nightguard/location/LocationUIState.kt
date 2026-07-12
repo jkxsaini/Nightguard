@@ -1,4 +1,4 @@
-package com.example.nightguard
+package com.example.nightguard.location
 
 class LocationUIState {
     data class LocationUIState(

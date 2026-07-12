@@ -1,4 +1,4 @@
-package com.example.nightguard
+package com.example.nightguard.location
 
 import android.Manifest
 import android.annotation.SuppressLint
