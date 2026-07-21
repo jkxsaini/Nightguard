@@ -20,7 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
-import com.example.nightguard.sensors.ShakeDetector
+import com.example.nightguard.location.ShakeDetector
 import com.example.nightguard.location.LocationProvider
 import com.example.nightguard.location.MapHandler
 import androidx.compose.runtime.remember
@@ -92,13 +92,15 @@ fun MainScreen(
     }
 
     // 3. Shake Detector starten
-    DisposableEffect(Unit) {
-        val shakeDetector = ShakeDetector(context) {
+    DisposableEffect(key1 = Unit) {
+        val shakeDetector = ShakeDetector(context)
+
+        shakeDetector.startListening {
             onEmergencyShake()
         }
-        shakeDetector.start()
+
         onDispose {
-            shakeDetector.stop()
+            shakeDetector.stopListening()
         }
     }
 

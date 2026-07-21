@@ -27,11 +27,10 @@ fun MapHandler(
     }
 
     val mapView = remember {
-        Configuration.getInstance().load(
-            context,
-            context.getSharedPreferences("osmdroid", Context.MODE_PRIVATE)
-        )
-        Configuration.getInstance().userAgentValue = context.packageName
+        val config = Configuration.getInstance()
+        config.load(context, context.getSharedPreferences("osmdroid", Context.MODE_PRIVATE))
+        // Setze einen eindeutigen User-Agent, um 403-Fehler von OSM zu vermeiden
+        config.userAgentValue = "NightguardApp/1.0 (com.example.nightguard; Android)"
 
         MapView(context).apply {
             setTileSource(TileSourceFactory.MAPNIK)

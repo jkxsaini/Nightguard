@@ -1,6 +1,8 @@
 package com.example.nightguard.screens
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.provider.ContactsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -23,23 +25,27 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.nightguard.data.SecureStorage
 
-// Hilfsfunktion: Liest den Namen des ausgewählten Kontakts aus der Android-Datenbank
-fun getContactNameFromUri(context: Context, uri: Uri): String? {
-    var name: String? = null
-    val cursor = context.contentResolver.query(uri, null, null, null, null)
+// Liest jetzt Name UND Nummer aus dem Android-Telefonbuch
+fun getContactNameAndNumber(context: Context, uri: Uri): String? {
+    var result: String? = null
+    val projection = arrayOf(
+        ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+        ContactsContract.CommonDataKinds.Phone.NUMBER
+    )
+    val cursor = context.contentResolver.query(uri, projection, null, null, null)
     cursor?.use {
         if (it.moveToFirst()) {
-            val nameIndex = it.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)
-            if (nameIndex >= 0) {
-                name = it.getString(nameIndex)
-            }
+            val name = it.getString(0)
+            val number = it.getString(1).replace(" ", "") // Entfernt Leerzeichen aus der Nummer
+            result = "$name - $number"
         }
     }
-    return name
+    return result
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,31 +54,28 @@ fun UserProfileScreen(onBackToHome: () -> Unit) {
     val context = LocalContext.current
     val secureStorage = remember { SecureStorage(context) }
 
-    // States für die UI
     var currentPin by remember { mutableStateOf(secureStorage.getPin()) }
     var newPinInput by remember { mutableStateOf("") }
-
     var contacts by remember { mutableStateOf(secureStorage.getContacts()) }
 
-    // Farben
     val deepWine = Color(0xFF1B040D)
     val cardColor = Color(0xFF2C2C2C)
     val buttonGrey = Color(0xFF333333)
 
-    // DER NATIVE CONTACT PICKER (Öffnet das echte Android-Telefonbuch)
+    // Neuer Launcher, der gezielt Telefonnummern abfragt
     val contactPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickContact()
-    ) { uri: Uri? ->
-        uri?.let {
-            // Holt den Namen aus dem Adressbuch
-            val name = getContactNameFromUri(context, it)
-            if (name != null) {
-                // Speichert den Namen dauerhaft in eurer App
-                val updatedList = contacts.toMutableList()
-                if (!updatedList.contains(name)) { // Verhindert Duplikate
-                    updatedList.add(name)
-                    secureStorage.saveContacts(updatedList)
-                    contacts = updatedList
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.data?.let { uri ->
+                val nameAndNumber = getContactNameAndNumber(context, uri)
+                if (nameAndNumber != null) {
+                    val updatedList = contacts.toMutableList()
+                    if (!updatedList.contains(nameAndNumber)) {
+                        updatedList.add(nameAndNumber)
+                        secureStorage.saveContacts(updatedList)
+                        contacts = updatedList
+                    }
                 }
             }
         }
@@ -98,7 +101,6 @@ fun UserProfileScreen(onBackToHome: () -> Unit) {
                 .padding(paddingValues)
                 .padding(24.dp)
         ) {
-            // --- PIN BEREICH (Bleibt erhalten) ---
             Text("Sicherheits-PIN", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(8.dp))
             Text("Aktuelle PIN: $currentPin", color = Color.LightGray, fontSize = 14.sp)
@@ -136,13 +138,15 @@ fun UserProfileScreen(onBackToHome: () -> Unit) {
             HorizontalDivider(color = Color.DarkGray)
             Spacer(modifier = Modifier.height(32.dp))
 
-            // --- KONTAKTE BEREICH (Jetzt mit echtem Adressbuch!) ---
             Text("Notfallkontakte", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Native Kontakt-Auswahl Button
             Button(
-                onClick = { contactPickerLauncher.launch(null) }, // Startet das Android-Telefonbuch
+                onClick = {
+                    // Öffnet das Adressbuch gefiltert nach Telefonnummern
+                    val intent = Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI)
+                    contactPickerLauncher.launch(intent)
+                },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = buttonGrey)
@@ -154,7 +158,6 @@ fun UserProfileScreen(onBackToHome: () -> Unit) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Kontaktliste anzeigen
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxWidth()
@@ -171,7 +174,8 @@ fun UserProfileScreen(onBackToHome: () -> Unit) {
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(contact, color = Color.White, fontSize = 16.sp)
+                            // Schneidet bei langen Nummern den Text ab, damit das Layout nicht kaputt geht
+                            Text(contact, color = Color.White, fontSize = 16.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
                             IconButton(
                                 onClick = {
                                     val updatedList = contacts.toMutableList()
@@ -182,7 +186,7 @@ fun UserProfileScreen(onBackToHome: () -> Unit) {
                             ) {
                                 Icon(Icons.Filled.Delete, contentDescription = "Löschen", tint = Color.Red)
                             }
-                        }
+
                     }
                 }
             }
