@@ -4,6 +4,12 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+// Firebase kann erst vollständig initialisiert werden, wenn deine projektbezogene
+// app/google-services.json vorhanden ist. Ohne die Datei bleibt das Projekt trotzdem buildbar.
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 android {
     namespace = "com.example.nightguard"
     compileSdk {
@@ -41,6 +47,10 @@ android {
 }
 
 dependencies {
+    // Firebase / Cloud Firestore
+    implementation(platform("com.google.firebase:firebase-bom:34.17.0"))
+    implementation("com.google.firebase:firebase-firestore")
+
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)

@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /unsafeAreas/{areaId} {
+      // Prototyp-Regeln: Jeder App-Nutzer darf die Gefahrenkarte lesen und neue
+      // Bereiche anlegen. Änderungen/Löschungen sind absichtlich gesperrt.
+      // Vor einem öffentlichen Release sollte dies mit Firebase Auth + Moderation
+      // weiter abgesichert werden.
+      allow read: if true;
+      allow create: if
+        request.resource.data.keys().hasOnly([
+          'latitude',
+          'longitude',
+          'radiusMeters',
+          'label',
+          'active',
+          'createdAt'
+        ]) &&
+        request.resource.data.latitude is number &&
+        request.resource.data.latitude >= -90 &&
+        request.resource.data.latitude <= 90 &&
+        request.resource.data.longitude is number &&
+        request.resource.data.longitude >= -180 &&
+        request.resource.data.longitude <= 180 &&
+        request.resource.data.radiusMeters is number &&
+        request.resource.data.radiusMeters >= 20 &&
+        request.resource.data.radiusMeters <= 2000 &&
+        request.resource.data.label is string &&
+        request.resource.data.label.size() <= 80 &&
+        request.resource.data.active == true &&
+        request.resource.data.createdAt == request.time;
+
+      allow update, delete: if false;
+    }
+  }
+}

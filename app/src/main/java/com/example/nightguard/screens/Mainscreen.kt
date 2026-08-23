@@ -2,6 +2,7 @@ package com.example.nightguard.screens
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -23,6 +24,8 @@ import androidx.core.content.ContextCompat
 import com.example.nightguard.location.ShakeDetector
 import com.example.nightguard.location.LocationProvider
 import com.example.nightguard.location.MapHandler
+import com.example.nightguard.data.UnsafeArea
+import com.example.nightguard.data.UnsafeAreaRepository
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
@@ -54,6 +57,29 @@ fun MainScreen(
     var currentLongitude by remember { mutableStateOf(6.9603) }
     var hasLocationPermission by remember { mutableStateOf(false) }
     val locationProvider = remember { LocationProvider(context) }
+
+    // Firebase / Firestore: Gefahrenbereiche live laden und auf der Karte anzeigen
+    val unsafeAreaRepository = remember { UnsafeAreaRepository(context.applicationContext) }
+    var unsafeAreas by remember { mutableStateOf<List<UnsafeArea>>(emptyList()) }
+    var firebaseError by remember { mutableStateOf<String?>(null) }
+    var pendingUnsafeArea by remember { mutableStateOf<Pair<Double, Double>?>(null) }
+    var selectedUnsafeRadius by remember { mutableFloatStateOf(120f) }
+
+    DisposableEffect(unsafeAreaRepository) {
+        val registration = unsafeAreaRepository.listenToUnsafeAreas(
+            onAreasChanged = { areas ->
+                unsafeAreas = areas
+                firebaseError = null
+            },
+            onError = { message ->
+                firebaseError = message
+            }
+        )
+
+        onDispose {
+            registration?.remove()
+        }
+    }
 
     fun loadCurrentLocation() {
         locationProvider.requestCurrentLocation(
@@ -102,6 +128,62 @@ fun MainScreen(
         onDispose {
             shakeDetector.stopListening()
         }
+    }
+
+    pendingUnsafeArea?.let { point ->
+        AlertDialog(
+            onDismissRequest = { pendingUnsafeArea = null },
+            title = { Text("Unsicheren Bereich markieren") },
+            text = {
+                Column {
+                    Text("Diese Position in Firebase speichern?")
+                    Spacer(Modifier.height(10.dp))
+                    Text(
+                        text = "${"%.5f".format(point.first)}, ${"%.5f".format(point.second)}",
+                        fontSize = 13.sp,
+                        color = Color.Gray
+                    )
+                    Spacer(Modifier.height(18.dp))
+                    Text("Radius: ${selectedUnsafeRadius.toInt()} m")
+                    Slider(
+                        value = selectedUnsafeRadius,
+                        onValueChange = { selectedUnsafeRadius = it },
+                        valueRange = 50f..500f
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        unsafeAreaRepository.addUnsafeArea(
+                            latitude = point.first,
+                            longitude = point.second,
+                            radiusMeters = selectedUnsafeRadius.toDouble(),
+                            onSuccess = {
+                                pendingUnsafeArea = null
+                                firebaseError = null
+                                Toast.makeText(
+                                    context,
+                                    "Unsicherer Bereich gespeichert",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            },
+                            onError = { message ->
+                                firebaseError = message
+                                Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                            }
+                        )
+                    }
+                ) {
+                    Text("Speichern")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingUnsafeArea = null }) {
+                    Text("Abbrechen")
+                }
+            }
+        )
     }
 
     Scaffold(
@@ -161,16 +243,57 @@ fun MainScreen(
                 .fillMaxSize()
                 .padding(bottom = paddingValues.calculateBottomPadding())
         ) {
-            // OBERER TEIL: OpenStreetMap mit osmdroid
-            MapHandler(
+            // OBERER TEIL: OpenStreetMap + Gefahrenbereiche aus Firestore
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f),
-                latitude = currentLatitude,
-                longitude = currentLongitude,
-                zoom = 15.0,
-                markerTitle = "Dein Standort"
-            )
+                    .weight(1f)
+            ) {
+                MapHandler(
+                    modifier = Modifier.fillMaxSize(),
+                    latitude = currentLatitude,
+                    longitude = currentLongitude,
+                    zoom = 15.0,
+                    markerTitle = "Dein Standort",
+                    unsafeAreas = unsafeAreas,
+                    onUnsafeAreaLongPress = { latitude, longitude ->
+                        selectedUnsafeRadius = 120f
+                        pendingUnsafeArea = latitude to longitude
+                    }
+                )
+
+                Surface(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(12.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    color = Color.Black.copy(alpha = 0.72f)
+                ) {
+                    Text(
+                        text = "Karte lange drücken → unsicheren Bereich melden",
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                        color = Color.White,
+                        fontSize = 12.sp
+                    )
+                }
+
+                firebaseError?.let { message ->
+                    Surface(
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(12.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        color = Color(0xFFD32F2F).copy(alpha = 0.92f)
+                    ) {
+                        Text(
+                            text = message,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                            color = Color.White,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+            }
 
             // UNTERER TEIL: Das Menü (Deep Wine Hintergrund)
             Column(
