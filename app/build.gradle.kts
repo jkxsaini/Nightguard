@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
+
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 // Firebase kann erst vollständig initialisiert werden, wenn deine projektbezogene
@@ -63,10 +65,9 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
-    // --- NEU: Hier sind die beiden fehlenden Bibliotheken! ---
+
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.2")
-    // ----------------------------------------------------------
 
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -77,4 +78,9 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation("androidx.compose.material:material-icons-extended")
     implementation("org.osmdroid:osmdroid-android:6.1.20")
+//google Maps API
+    implementation("com.google.maps.android:maps-compose:8.4.0")
+}
+secrets {
+    propertiesFileName = "secrets.properties"
 }
