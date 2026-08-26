@@ -87,11 +87,7 @@ fun UserProfileScreen(onBackToHome: () -> Unit) {
                 title = { Text("Mein Profil", color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = onBackToHome) {
-                        Icon(
-                            Icons.Filled.ArrowBack,
-                            contentDescription = "Zurück",
-                            tint = Color.White
-                        )
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Zurück", tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = deepWine)
@@ -105,12 +101,7 @@ fun UserProfileScreen(onBackToHome: () -> Unit) {
                 .padding(paddingValues)
                 .padding(24.dp)
         ) {
-            Text(
-                "Sicherheits-PIN",
-                color = Color.White,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Text("Sicherheits-PIN", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(8.dp))
             Text("Aktuelle PIN: $currentPin", color = Color.LightGray, fontSize = 14.sp)
             Spacer(modifier = Modifier.height(8.dp))
@@ -147,21 +138,13 @@ fun UserProfileScreen(onBackToHome: () -> Unit) {
             HorizontalDivider(color = Color.DarkGray)
             Spacer(modifier = Modifier.height(32.dp))
 
-            Text(
-                "Notfallkontakte",
-                color = Color.White,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Text("Notfallkontakte", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
                 onClick = {
                     // Öffnet das Adressbuch gefiltert nach Telefonnummern
-                    val intent = Intent(
-                        Intent.ACTION_PICK,
-                        ContactsContract.CommonDataKinds.Phone.CONTENT_URI
-                    )
+                    val intent = Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI)
                     contactPickerLauncher.launch(intent)
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
@@ -192,14 +175,7 @@ fun UserProfileScreen(onBackToHome: () -> Unit) {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             // Schneidet bei langen Nummern den Text ab, damit das Layout nicht kaputt geht
-                            Text(
-                                contact,
-                                color = Color.White,
-                                fontSize = 16.sp,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.weight(1f)
-                            )
+                            Text(contact, color = Color.White, fontSize = 16.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
                             IconButton(
                                 onClick = {
                                     val updatedList = contacts.toMutableList()
@@ -208,13 +184,8 @@ fun UserProfileScreen(onBackToHome: () -> Unit) {
                                     contacts = updatedList
                                 }
                             ) {
-                                Icon(
-                                    Icons.Filled.Delete,
-                                    contentDescription = "Löschen",
-                                    tint = Color.Red
-                                )
+                                Icon(Icons.Filled.Delete, contentDescription = "Löschen", tint = Color.Red)
                             }
-
                         }
                     }
                 }

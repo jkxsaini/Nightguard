@@ -63,10 +63,9 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
-    // --- NEU: Hier sind die beiden fehlenden Bibliotheken! ---
+    // Navigation & ViewModel
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.2")
-    // ----------------------------------------------------------
 
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -75,6 +74,11 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+
+    // UI & Icons
     implementation("androidx.compose.material:material-icons-extended")
-    implementation("org.osmdroid:osmdroid-android:6.1.20")
+
+    // Google Maps
+    implementation("com.google.maps.android:maps-compose:4.4.1")
+    implementation("com.google.android.gms:play-services-maps:18.2.0")
 }

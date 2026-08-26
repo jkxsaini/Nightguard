@@ -26,39 +26,31 @@ import com.example.nightguard.location.LocationProvider
 import com.example.nightguard.location.MapHandler
 import com.example.nightguard.data.UnsafeArea
 import com.example.nightguard.data.UnsafeAreaRepository
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
+
 @Composable
 fun MainScreen(
     locationUiState: Any? = null,
     onShareLocationClick: (String) -> Unit,
     onFakeCallClick: () -> Unit,
     onNavigateToProfile: () -> Unit,
-    onEmergencyShake: () -> Unit // NEU: Für den Schüttel-Sensor
+    onEmergencyShake: () -> Unit
 ) {
     val context = LocalContext.current
 
-    // Farben
     val deepWine = Color(0xFF1B040D)
     val cardColor = Color(0xFF2C2C2C)
     val buttonColor = Color(0xFF111111)
 
-    // Holt die echten, gespeicherten Kontakte!
     val secureStorage = remember { com.example.nightguard.data.SecureStorage(context) }
     var contacts by remember { mutableStateOf(secureStorage.getContacts()) }
 
-// FIX: Hier muss die Variable definiert werden!
     var expanded by remember { mutableStateOf(false) }
 
-    // GPS und Sensor State (Startposition in Köln)
     var currentLatitude by remember { mutableStateOf(50.9375) }
     var currentLongitude by remember { mutableStateOf(6.9603) }
     var hasLocationPermission by remember { mutableStateOf(false) }
     val locationProvider = remember { LocationProvider(context) }
 
-    // Firebase / Firestore: Gefahrenbereiche live laden und auf der Karte anzeigen
     val unsafeAreaRepository = remember { UnsafeAreaRepository(context.applicationContext) }
     var unsafeAreas by remember { mutableStateOf<List<UnsafeArea>>(emptyList()) }
     var firebaseError by remember { mutableStateOf<String?>(null) }
@@ -75,7 +67,6 @@ fun MainScreen(
                 firebaseError = message
             }
         )
-
         onDispose {
             registration?.remove()
         }
@@ -88,12 +79,10 @@ fun MainScreen(
                 currentLongitude = location.longitude
             },
             onError = {
-                // Fallback bleibt Köln, wenn kein Standort verfügbar ist
             }
         )
     }
 
-    // 1. Permission Launcher für GPS
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
@@ -103,7 +92,6 @@ fun MainScreen(
         }
     }
 
-    // 2. Echtes GPS abfragen
     LaunchedEffect(Unit) {
         if (ContextCompat.checkSelfPermission(
                 context,
@@ -117,14 +105,11 @@ fun MainScreen(
         }
     }
 
-    // 3. Shake Detector starten
     DisposableEffect(key1 = Unit) {
         val shakeDetector = ShakeDetector(context)
-
         shakeDetector.startListening {
             onEmergencyShake()
         }
-
         onDispose {
             shakeDetector.stopListening()
         }
@@ -188,7 +173,6 @@ fun MainScreen(
 
     Scaffold(
         bottomBar = {
-            // Die Menüleiste (Bottom Navigation) OHNE weißen Film
             NavigationBar(
                 containerColor = Color.Black,
                 contentColor = Color.White
@@ -237,13 +221,11 @@ fun MainScreen(
             }
         }
     ) { paddingValues ->
-        // Die weiße Lücke oben schließen!
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(bottom = paddingValues.calculateBottomPadding())
         ) {
-            // OBERER TEIL: OpenStreetMap + Gefahrenbereiche aus Firestore
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -253,7 +235,7 @@ fun MainScreen(
                     modifier = Modifier.fillMaxSize(),
                     latitude = currentLatitude,
                     longitude = currentLongitude,
-                    zoom = 15.0,
+                    zoom = 15f,
                     markerTitle = "Dein Standort",
                     unsafeAreas = unsafeAreas,
                     onUnsafeAreaLongPress = { latitude, longitude ->
@@ -295,7 +277,6 @@ fun MainScreen(
                 }
             }
 
-            // UNTERER TEIL: Das Menü (Deep Wine Hintergrund)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -303,7 +284,6 @@ fun MainScreen(
                     .padding(horizontal = 24.dp, vertical = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Schnellstart
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -342,7 +322,6 @@ fun MainScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // ECHTES DROPDOWN-MENÜ
                 Box(modifier = Modifier.fillMaxWidth()) {
                     Button(
                         onClick = { expanded = true },
