@@ -12,6 +12,7 @@ class UnsafeAreaRepository(
     companion object {
         private const val COLLECTION_UNSAFE_AREAS = "unsafeAreas"
         private const val DEFAULT_LABEL = "Unsicherer Bereich"
+        private const val MAX_MESSAGE_LENGTH = 300
     }
 
     private fun firestoreOrNull(): FirebaseFirestore? {
@@ -49,13 +50,15 @@ class UnsafeAreaRepository(
                     val longitude = document.getDouble("longitude") ?: return@mapNotNull null
                     val radius = document.getDouble("radiusMeters") ?: 120.0
                     val label = document.getString("label").orEmpty().ifBlank { DEFAULT_LABEL }
+                    val message = document.getString("message").orEmpty().take(MAX_MESSAGE_LENGTH)
 
                     UnsafeArea(
                         id = document.id,
                         latitude = latitude,
                         longitude = longitude,
                         radiusMeters = radius.coerceIn(20.0, 2_000.0),
-                        label = label
+                        label = label,
+                        message = message
                     )
                 }
 
@@ -68,6 +71,7 @@ class UnsafeAreaRepository(
         longitude: Double,
         radiusMeters: Double = 120.0,
         label: String = DEFAULT_LABEL,
+        message: String = "",
         onSuccess: () -> Unit = {},
         onError: (String) -> Unit = {}
     ) {
@@ -85,6 +89,7 @@ class UnsafeAreaRepository(
             "longitude" to longitude.coerceIn(-180.0, 180.0),
             "radiusMeters" to radiusMeters.coerceIn(20.0, 2_000.0),
             "label" to label.ifBlank { DEFAULT_LABEL }.take(80),
+            "message" to message.trim().take(MAX_MESSAGE_LENGTH),
             "active" to true,
             "createdAt" to FieldValue.serverTimestamp()
         )

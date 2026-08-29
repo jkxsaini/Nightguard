@@ -5,5 +5,6 @@ data class UnsafeArea(
     val latitude: Double,
     val longitude: Double,
     val radiusMeters: Double = 120.0,
-    val label: String = "Unsicherer Bereich"
+    val label: String = "Unsicherer Bereich",
+    val message: String = ""
 )

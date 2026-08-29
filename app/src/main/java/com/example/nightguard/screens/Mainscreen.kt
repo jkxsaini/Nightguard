@@ -56,6 +56,7 @@ fun MainScreen(
     var firebaseError by remember { mutableStateOf<String?>(null) }
     var pendingUnsafeArea by remember { mutableStateOf<Pair<Double, Double>?>(null) }
     var selectedUnsafeRadius by remember { mutableFloatStateOf(120f) }
+    var unsafeAreaMessage by remember { mutableStateOf("") }
 
     DisposableEffect(unsafeAreaRepository) {
         val registration = unsafeAreaRepository.listenToUnsafeAreas(
@@ -117,7 +118,10 @@ fun MainScreen(
 
     pendingUnsafeArea?.let { point ->
         AlertDialog(
-            onDismissRequest = { pendingUnsafeArea = null },
+            onDismissRequest = {
+                pendingUnsafeArea = null
+                unsafeAreaMessage = ""
+            },
             title = { Text("Unsicheren Bereich markieren") },
             text = {
                 Column {
@@ -135,6 +139,21 @@ fun MainScreen(
                         onValueChange = { selectedUnsafeRadius = it },
                         valueRange = 50f..500f
                     )
+                    Spacer(Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value = unsafeAreaMessage,
+                        onValueChange = { text ->
+                            unsafeAreaMessage = text.take(300)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("Nachricht (optional)") },
+                        placeholder = { Text("z. B. schlecht beleuchtet oder unangenehme Situation") },
+                        minLines = 2,
+                        maxLines = 4,
+                        supportingText = {
+                            Text("${unsafeAreaMessage.length}/300")
+                        }
+                    )
                 }
             },
             confirmButton = {
@@ -144,8 +163,10 @@ fun MainScreen(
                             latitude = point.first,
                             longitude = point.second,
                             radiusMeters = selectedUnsafeRadius.toDouble(),
+                            message = unsafeAreaMessage,
                             onSuccess = {
                                 pendingUnsafeArea = null
+                                unsafeAreaMessage = ""
                                 firebaseError = null
                                 Toast.makeText(
                                     context,
@@ -164,7 +185,12 @@ fun MainScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { pendingUnsafeArea = null }) {
+                TextButton(
+                    onClick = {
+                        pendingUnsafeArea = null
+                        unsafeAreaMessage = ""
+                    }
+                ) {
                     Text("Abbrechen")
                 }
             }
@@ -240,6 +266,7 @@ fun MainScreen(
                     unsafeAreas = unsafeAreas,
                     onUnsafeAreaLongPress = { latitude, longitude ->
                         selectedUnsafeRadius = 120f
+                        unsafeAreaMessage = ""
                         pendingUnsafeArea = latitude to longitude
                     }
                 )

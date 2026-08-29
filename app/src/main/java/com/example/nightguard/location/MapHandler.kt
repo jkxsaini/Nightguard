@@ -20,7 +20,6 @@ fun MapHandler(
     longitude: Double,
     zoom: Float = 15f,
     markerTitle: String,
-    // --- NEU: Eure Parameter für die unsicheren Bereiche sind wieder da ---
     unsafeAreas: List<UnsafeArea> = emptyList(),
     onUnsafeAreaLongPress: (Double, Double) -> Unit = { _, _ -> }
 ) {
@@ -32,25 +31,39 @@ fun MapHandler(
     GoogleMap(
         modifier = modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState,
-        // Erkennt langes Drücken auf die Karte und gibt die Koordinaten an deinen MainScreen weiter
         onMapLongClick = { latLng ->
             onUnsafeAreaLongPress(latLng.latitude, latLng.longitude)
         }
     ) {
-        // Dein eigener Standort (Pin)
+        // Eigener Standort
         Marker(
             state = MarkerState(position = location),
             title = markerTitle
         )
 
-        // Zeichnet alle unsicheren Bereiche als rote, leicht transparente Kreise auf die Karte
         unsafeAreas.forEach { area ->
+            val areaPosition = LatLng(area.latitude, area.longitude)
+
+            // Der gespeicherte Radius wird als halbtransparenter roter Bereich dargestellt.
             Circle(
-                center = LatLng(area.latitude, area.longitude),
-                radius = 100.0,  // <-- HIER: Einfach eine feste Zahl wie 100.0 eintragen (100 Meter)
-                fillColor = Color(0x44FF0000),   // 44 ist der Transparenz-Wert, FF0000 ist Rot
+                center = areaPosition,
+                radius = area.radiusMeters,
+                fillColor = Color(0x44FF0000),
                 strokeColor = Color.Red,
                 strokeWidth = 3f
+            )
+
+            // Der Marker in der Mitte zeigt Radius und optionale Nachricht beim Antippen.
+            Marker(
+                state = MarkerState(position = areaPosition),
+                title = area.label,
+                snippet = buildString {
+                    append("Radius: ${area.radiusMeters.toInt()} m")
+                    if (area.message.isNotBlank()) {
+                        append(" · ")
+                        append(area.message)
+                    }
+                }
             )
         }
     }
